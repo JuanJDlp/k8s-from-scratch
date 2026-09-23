@@ -1,0 +1,3 @@
+# Copiar a terraform.tfvars y ajustar
+admin_cidr          = "186.81.100.80/32" # tu IP pública: curl https://checkip.amazonaws.com
+ssh_public_key_path = "~/.ssh/id_ed25519.pub"
