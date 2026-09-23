@@ -12,6 +12,53 @@ module "networking" {
   private_subnet_cidr = var.private_subnet_cidr
 }
 
+locals {
+  # Reversa de los dos primeros octetos de la VPC (10.0.0.0/16 -> 0.10.in-addr.arpa)
+  vpc_octets       = split(".", split("/", var.vpc_cidr)[0])
+  dns_reverse_zone = "${local.vpc_octets[1]}.${local.vpc_octets[0]}.in-addr.arpa"
+
+  # Nombre PTR relativo a la zona inversa (10.0.2.10 -> "10.2")
+  ptr_name = { for host, ip in {
+    bastion = var.bastion_ip
+    master  = var.master_ip
+    worker  = var.worker_ips[0]
+    } : host => "${split(".", ip)[3]}.${split(".", ip)[2]}"
+  }
+}
+
+# Zona directa: bastion.k8s.lab, master.k8s.lab, worker.k8s.lab
+module "dns" {
+  source = "../modules/route53"
+
+  domain_name = var.dns_domain
+  vpc_id      = module.networking.vpc_id
+  vpc_region  = var.region
+  comment     = "Zona privada del cluster ${var.project}"
+
+  records = {
+    bastion = [var.bastion_ip]
+    master  = [var.master_ip]
+    worker  = [var.worker_ips[0]]
+  }
+}
+
+# Zona inversa: resuelve las IPs privadas a bastion/master/worker.k8s.lab
+module "dns_reverse" {
+  source = "../modules/route53"
+
+  domain_name = local.dns_reverse_zone
+  vpc_id      = module.networking.vpc_id
+  vpc_region  = var.region
+  comment     = "Zona inversa del cluster ${var.project}"
+  record_type = "PTR"
+
+  records = {
+    (local.ptr_name.bastion) = ["bastion.${var.dns_domain}."]
+    (local.ptr_name.master)  = ["master.${var.dns_domain}."]
+    (local.ptr_name.worker)  = ["worker.${var.dns_domain}."]
+  }
+}
+
 # Bastión: punto de administración con kubectl
 module "bastion" {
   source = "../modules/compute"

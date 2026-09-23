@@ -58,6 +58,13 @@ variable "worker_ips" {
   default     = ["10.0.2.20"]
 }
 
+# ---------- DNS ----------
+variable "dns_domain" {
+  description = "Dominio privado de la zona Route 53 (ver cluster.md, Fase 1)"
+  type        = string
+  default     = "k8s.lab"
+}
+
 # ---------- Tamaños ----------
 variable "bastion_instance_type" {
   type    = string
@@ -65,13 +72,13 @@ variable "bastion_instance_type" {
 }
 
 variable "master_instance_type" {
-  description = "Taller: mínimo 2 vCPU / 2 GiB (t3.medium = 2 vCPU / 4 GiB)"
+  description = "Taller: mínimo 2 vCPU / 2 GiB (c7i-flex.large = 2 vCPU / 4 GiB)"
   type        = string
-  default     = "t3.medium"
+  default     = "c7i-flex.large"
 }
 
 variable "worker_instance_type" {
-  description = "Taller: mínimo 1 vCPU / 2 GiB (t3.small = 2 vCPU / 2 GiB)"
+  description = "Taller: mínimo 1 vCPU / 2 GiB (c7i-flex.large = 2 vCPU / 4 GiB)"
   type        = string
-  default     = "t3.small"
+  default     = "c7i-flex.large"
 }

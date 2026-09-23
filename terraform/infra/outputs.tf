@@ -14,6 +14,16 @@ output "nat_public_ip" {
   value = module.networking.nat_public_ip
 }
 
+output "dns_zone_id" {
+  description = "Zona privada directa (ver var.dns_domain)"
+  value       = module.dns.zone_id
+}
+
+output "dns_reverse_zone_id" {
+  description = "Zona privada inversa (ver local.dns_reverse_zone)"
+  value       = module.dns_reverse.zone_id
+}
+
 output "ssh_config" {
   description = "Pegar en ~/.ssh/config para entrar con: ssh bastion | ssh master | ssh worker01"
   value = join("\n", concat(
