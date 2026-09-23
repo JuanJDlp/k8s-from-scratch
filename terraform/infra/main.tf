@@ -13,17 +13,20 @@ module "networking" {
 }
 
 locals {
+  # Un solo worker se llama "worker" (como en cluster.md); con varios, worker01, worker02...
+  workers = length(var.worker_ips) == 1 ? { worker = var.worker_ips[0] } : {
+    for i, ip in var.worker_ips : format("worker%02d", i + 1) => ip
+  }
+
+  # hostname corto => IP privada. Alimenta DNS, ssh_config e inventario de Ansible
+  hosts = merge({ bastion = var.bastion_ip, master = var.master_ip }, local.workers)
+
   # Reversa de los dos primeros octetos de la VPC (10.0.0.0/16 -> 0.10.in-addr.arpa)
   vpc_octets       = split(".", split("/", var.vpc_cidr)[0])
   dns_reverse_zone = "${local.vpc_octets[1]}.${local.vpc_octets[0]}.in-addr.arpa"
 
   # Nombre PTR relativo a la zona inversa (10.0.2.10 -> "10.2")
-  ptr_name = { for host, ip in {
-    bastion = var.bastion_ip
-    master  = var.master_ip
-    worker  = var.worker_ips[0]
-    } : host => "${split(".", ip)[3]}.${split(".", ip)[2]}"
-  }
+  ptr_name = { for host, ip in local.hosts : host => "${split(".", ip)[3]}.${split(".", ip)[2]}" }
 }
 
 # Zona directa: bastion.k8s.lab, master.k8s.lab, worker.k8s.lab
@@ -35,11 +38,7 @@ module "dns" {
   vpc_region  = var.region
   comment     = "Zona privada del cluster ${var.project}"
 
-  records = {
-    bastion = [var.bastion_ip]
-    master  = [var.master_ip]
-    worker  = [var.worker_ips[0]]
-  }
+  records = { for host, ip in local.hosts : host => [ip] }
 }
 
 # Zona inversa: resuelve las IPs privadas a bastion/master/worker.k8s.lab
@@ -52,11 +51,7 @@ module "dns_reverse" {
   comment     = "Zona inversa del cluster ${var.project}"
   record_type = "PTR"
 
-  records = {
-    (local.ptr_name.bastion) = ["bastion.${var.dns_domain}."]
-    (local.ptr_name.master)  = ["master.${var.dns_domain}."]
-    (local.ptr_name.worker)  = ["worker.${var.dns_domain}."]
-  }
+  records = { for host, ptr in local.ptr_name : ptr => ["${host}.${var.dns_domain}."] }
 }
 
 # Bastión: punto de administración con kubectl

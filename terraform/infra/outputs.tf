@@ -3,11 +3,7 @@ output "bastion_public_ip" {
 }
 
 output "private_ips" {
-  value = {
-    bastion = var.bastion_ip
-    master  = var.master_ip
-    workers = var.worker_ips
-  }
+  value = local.hosts
 }
 
 output "nat_public_ip" {
@@ -25,7 +21,7 @@ output "dns_reverse_zone_id" {
 }
 
 output "ssh_config" {
-  description = "Pegar en ~/.ssh/config para entrar con: ssh bastion | ssh master | ssh worker01"
+  description = "Pegar en ~/.ssh/config para entrar con: ssh bastion | ssh master | ssh worker"
   value = join("\n", concat(
     [
       "Host bastion",
@@ -37,12 +33,17 @@ output "ssh_config" {
       "  User rocky",
       "  ProxyJump bastion",
     ],
-    flatten([for i, ip in var.worker_ips : [
+    flatten([for name, ip in local.workers : [
       "",
-      format("Host worker%02d", i + 1),
+      "Host ${name}",
       "  HostName ${ip}",
       "  User rocky",
       "  ProxyJump bastion",
     ]]),
   ))
+}
+
+output "ansible_inventory" {
+  description = "Inventario generado para Ansible"
+  value       = abspath(local_file.ansible_inventory.filename)
 }

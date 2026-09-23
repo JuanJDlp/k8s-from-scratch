@@ -82,3 +82,22 @@ variable "worker_instance_type" {
   type        = string
   default     = "c7i-flex.large"
 }
+
+# ---------- Ansible ----------
+variable "ssh_user" {
+  description = "Usuario por defecto de la AMI (Rocky Linux = rocky)"
+  type        = string
+  default     = "rocky"
+}
+
+variable "ssh_private_key_path" {
+  description = "Llave privada que usa Ansible (pareja de ssh_public_key_path)"
+  type        = string
+  default     = "~/.ssh/id_ed25519"
+}
+
+variable "ansible_inventory_path" {
+  description = "Dónde se escribe el inventario de Ansible. null = ansible/inventories/aws/hosts.yml del repo"
+  type        = string
+  default     = null
+}

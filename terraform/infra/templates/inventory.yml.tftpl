@@ -1,0 +1,34 @@
+# GENERADO POR TERRAFORM (terraform/infra/ansible.tf). No editar a mano:
+# se sobrescribe en cada `terraform apply`.
+all:
+  vars:
+    ansible_user: ${ssh_user}
+    ansible_ssh_private_key_file: ${ssh_key}
+    dns_domain: ${dns_domain}
+    vpc_cidr: ${vpc_cidr}
+  children:
+    bastions:
+      hosts:
+        bastion:
+          ansible_host: ${bastion_public_ip}
+          private_ip: ${bastion_ip}
+    k8s_cluster:
+      vars:
+        # Los nodos no tienen IP pública: se llega a ellos saltando por el bastión
+        ansible_ssh_common_args: >-
+          -o ProxyCommand="ssh -W %h:%p -q -i ${ssh_key}
+          -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+          ${ssh_user}@${bastion_public_ip}"
+      children:
+        control_plane:
+          hosts:
+            master:
+              ansible_host: ${master_ip}
+              private_ip: ${master_ip}
+        workers:
+          hosts:
+%{ for name, ip in workers ~}
+            ${name}:
+              ansible_host: ${ip}
+              private_ip: ${ip}
+%{ endfor ~}
