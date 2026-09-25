@@ -5,7 +5,7 @@ smoke_test_replicas: 2
 smoke_test_node_port: 30080
 smoke_test_node: "{{ groups['workers'][0] }}"
 smoke_test_dns_image: busybox:1.36
-smoke_test_manifest_dir: "{{ ansible_facts['user_dir'] }}/manifests"
+smoke_test_manifest_dir: "/home/{{ k8s_admin_user }}/manifests"
 smoke_test_dns_lookups:
   - "{{ smoke_test_name }}.default.svc.cluster.local"
   - kubernetes.default.svc.cluster.local

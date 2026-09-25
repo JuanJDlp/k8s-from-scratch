@@ -19,14 +19,20 @@ Requisito: el clúster ya levantado (`make up` en la raíz del repo).
 
 ```bash
 BASTION=$(terraform -chdir=terraform/infra output -raw bastion_public_ip)
-SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+SSH_OPTS=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
 
-scp $SSH_OPTS -r test-deploy rocky@$BASTION:~
-ssh $SSH_OPTS rocky@$BASTION
+scp "${SSH_OPTS[@]}" -r test-deploy rocky@$BASTION:~
+ssh "${SSH_OPTS[@]}" rocky@$BASTION
 ```
 
 Las opciones `SSH_OPTS` evitan el error de *host key changed*, que aparece porque cada
 recreación trae llaves de host nuevas con la misma IP.
+
+`SSH_OPTS` es un **array**, no un string: en zsh (a diferencia de bash) una variable sin
+comillas no se separa en palabras por defecto, así que `"-o A -o B"` como string plano
+llega a `ssh`/`scp` como un solo argumento y falla con
+`keyword stricthostkeychecking extra arguments at end of line`. Con el array y
+`"${SSH_OPTS[@]}"` cada opción se expande por separado, y funciona igual en bash.
 
 ## 2. Desplegar
 
@@ -59,7 +65,7 @@ Elige una de estas dos formas.
 **[TU PC]**
 
 ```bash
-ssh $SSH_OPTS -N -L 8080:worker.k8s.lab:30090 rocky@$BASTION
+ssh "${SSH_OPTS[@]}" -N -L 8080:worker.k8s.lab:30090 rocky@$BASTION
 ```
 
 Abre <http://localhost:8080>. El bastión resuelve `worker.k8s.lab` con la zona privada de
@@ -72,7 +78,7 @@ No pasa por el NodePort: el API Server abre un túnel directo hasta un Pod.
 **[TU PC]**, terminal 1: entra al bastión y reenvía el puerto 8080 de tu PC al 9898 del bastión.
 
 ```bash
-ssh $SSH_OPTS -L 8080:localhost:9898 rocky@$BASTION
+ssh "${SSH_OPTS[@]}" -L 8080:localhost:9898 rocky@$BASTION
 ```
 
 **[BASTIÓN]**, dentro de esa misma sesión:

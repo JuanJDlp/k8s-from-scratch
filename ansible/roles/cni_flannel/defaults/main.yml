@@ -5,5 +5,5 @@ cni_flannel_manifest_url: >-
   https://github.com/flannel-io/flannel/releases/{{
   'latest/download' if cni_flannel_version == 'latest' else 'download/' ~ cni_flannel_version
   }}/kube-flannel.yml
-cni_flannel_manifest_dir: "{{ ansible_facts['user_dir'] }}/manifests"
+cni_flannel_manifest_dir: "/home/{{ k8s_admin_user }}/manifests"
 cni_flannel_rollout_timeout: 300s
