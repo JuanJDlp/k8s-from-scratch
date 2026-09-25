@@ -1,0 +1,5 @@
+---
+firewalld_ports:
+  - 10250/tcp         # kubelet
+  - 10256/tcp         # kube-proxy
+  - 30000-32767/tcp   # NodePort

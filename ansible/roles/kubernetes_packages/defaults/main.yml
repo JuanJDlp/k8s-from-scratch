@@ -1,0 +1,7 @@
+---
+kubernetes_packages:
+  - kubelet
+  - kubeadm
+  - kubectl
+kubernetes_enable_kubelet: true
+kubernetes_repo_url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_version }}/rpm/"

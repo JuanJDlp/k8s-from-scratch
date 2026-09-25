@@ -1,0 +1,30 @@
+---
+- name: Create manifests directory
+  ansible.builtin.file:
+    path: "{{ cni_flannel_manifest_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download Flannel manifest
+  ansible.builtin.get_url:
+    url: "{{ cni_flannel_manifest_url }}"
+    dest: "{{ cni_flannel_manifest_dir }}/kube-flannel.yml"
+    mode: "0644"
+
+# El manifiesto trae 10.244.0.0/16; debe coincidir con podSubnet de kubeadm
+- name: Set Pod network in Flannel manifest
+  ansible.builtin.replace:
+    path: "{{ cni_flannel_manifest_dir }}/kube-flannel.yml"
+    regexp: '"Network": "[0-9./]+"'
+    replace: '"Network": "{{ k8s_pod_cidr }}"'
+
+- name: Apply Flannel
+  ansible.builtin.command: kubectl apply -f {{ cni_flannel_manifest_dir }}/kube-flannel.yml
+  register: cni_flannel_apply
+  changed_when: cni_flannel_apply.stdout is search('created|configured')
+
+- name: Wait for Flannel DaemonSet rollout
+  ansible.builtin.command: >-
+    kubectl -n kube-flannel rollout status daemonset/kube-flannel-ds
+    --timeout={{ cni_flannel_rollout_timeout }}
+  changed_when: false

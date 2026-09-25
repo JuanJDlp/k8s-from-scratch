@@ -1,0 +1,8 @@
+---
+common_extra_packages:
+  - bind-utils
+
+# En el bastión solo el cliente
+kubernetes_packages:
+  - kubectl
+kubernetes_enable_kubelet: false

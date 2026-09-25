@@ -1,0 +1,7 @@
+---
+- name: Join workers (cluster.md 3.5)
+  hosts: workers
+  become: true
+  tags: [workers]
+  roles:
+    - kubeadm_worker

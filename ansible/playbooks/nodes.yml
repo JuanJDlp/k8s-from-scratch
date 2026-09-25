@@ -1,0 +1,17 @@
+---
+- name: Prepare Kubernetes nodes (cluster.md Fase 2)
+  hosts: k8s_cluster
+  become: true
+  tags: [nodes]
+  roles:
+    - k8s_prereqs
+    - firewalld
+    - containerd
+    - kubernetes_packages
+
+- name: Install kubectl on the bastion (cluster.md 3.3)
+  hosts: bastions
+  become: true
+  tags: [nodes, bastion]
+  roles:
+    - kubernetes_packages

@@ -1,0 +1,7 @@
+---
+firewalld_ports:
+  - 6443/tcp        # API Server
+  - 2379-2380/tcp   # etcd
+  - 10250/tcp       # kubelet
+  - 10257/tcp       # kube-controller-manager
+  - 10259/tcp       # kube-scheduler

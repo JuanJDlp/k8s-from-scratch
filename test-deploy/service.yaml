@@ -1,0 +1,15 @@
+# NodePort: accesible desde el bastión en http://worker.k8s.lab:30090
+# (sg-worker y firewalld ya permiten 30000-32767 desde el bastión)
+apiVersion: v1
+kind: Service
+metadata:
+  name: podinfo
+spec:
+  type: NodePort
+  selector:
+    app: podinfo
+  ports:
+    - name: http
+      port: 9898
+      targetPort: http
+      nodePort: 30090

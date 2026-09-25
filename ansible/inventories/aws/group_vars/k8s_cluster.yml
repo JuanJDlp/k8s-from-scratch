@@ -1,0 +1,13 @@
+---
+common_extra_packages:
+  - iproute-tc
+  - firewalld
+  - dnf-plugins-core
+
+# cluster.md 2.5: red de Pods y de Services como orígenes de confianza
+firewalld_trusted_sources:
+  - "{{ k8s_pod_cidr }}"
+  - "{{ k8s_service_cidr }}"
+firewalld_masquerade: true
+firewalld_common_ports:
+  - 8472/udp        # VXLAN de Flannel

@@ -15,3 +15,8 @@ terraform.rc
 *.tfplan
 guia.pdf
 cluster.md
+
+# Ansible
+ansible/inventories/aws/hosts.yml
+ansible/collections/
+*.retry

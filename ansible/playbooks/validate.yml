@@ -1,0 +1,7 @@
+---
+- name: Validate the cluster (cluster.md Fase 4)
+  hosts: bastions
+  become: false
+  tags: [validate]
+  roles:
+    - smoke_test

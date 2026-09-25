@@ -1,0 +1,64 @@
+---
+# 4.1 Nodos Ready y Pods del sistema Running
+- name: Wait for all nodes to be Ready
+  ansible.builtin.command: kubectl wait nodes --all --for=condition=Ready --timeout=300s
+  changed_when: false
+
+- name: Wait for kube-system Pods to be Ready
+  ansible.builtin.command: kubectl -n kube-system wait pods --all --for=condition=Ready --timeout=300s
+  changed_when: false
+
+# 4.2 / 4.3 Deployment en el worker y Service NodePort
+- name: Create manifests directory
+  ansible.builtin.file:
+    path: "{{ smoke_test_manifest_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Render test application manifest
+  ansible.builtin.template:
+    src: nginx-test.yaml.j2
+    dest: "{{ smoke_test_manifest_dir }}/{{ smoke_test_name }}.yaml"
+    mode: "0644"
+
+- name: Apply test application
+  ansible.builtin.command: kubectl apply -f {{ smoke_test_manifest_dir }}/{{ smoke_test_name }}.yaml
+  register: smoke_test_apply
+  changed_when: smoke_test_apply.stdout is search('created|configured')
+
+- name: Wait for test deployment rollout
+  ansible.builtin.command: kubectl rollout status deployment/{{ smoke_test_name }} --timeout=300s
+  changed_when: false
+
+# 4.4 Consumir la aplicación desde el bastión
+- name: Reach the NodePort from the bastion
+  ansible.builtin.uri:
+    url: "http://{{ smoke_test_node }}.{{ dns_domain }}:{{ smoke_test_node_port }}"
+    status_code: 200
+  register: smoke_test_http
+  until: smoke_test_http.status == 200
+  retries: 12
+  delay: 5
+
+# 4.5 CoreDNS: nombres del clúster y externos
+- name: Resolve names from inside a Pod
+  ansible.builtin.command: >-
+    kubectl run dnstest-{{ idx }} --image={{ smoke_test_dns_image }}
+    --restart=Never --rm -i --quiet -- nslookup {{ item }}
+  loop: "{{ smoke_test_dns_lookups }}"
+  loop_control:
+    index_var: idx
+  register: smoke_test_dns
+  until: smoke_test_dns.rc == 0
+  retries: 5
+  delay: 5
+  changed_when: false
+
+- name: Collect cluster summary
+  ansible.builtin.command: kubectl get nodes,pods -A -o wide
+  register: smoke_test_summary
+  changed_when: false
+
+- name: Show cluster summary
+  ansible.builtin.debug:
+    msg: "{{ smoke_test_summary.stdout_lines }}"

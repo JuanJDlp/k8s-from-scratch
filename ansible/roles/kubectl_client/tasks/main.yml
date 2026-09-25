@@ -1,0 +1,36 @@
+---
+# admin.conf viaja master -> controlador -> bastión en memoria; nunca queda
+# una copia temporal en el home del master (cluster.md 3.2)
+- name: Read admin.conf from the control plane
+  ansible.builtin.slurp:
+    src: /etc/kubernetes/admin.conf
+  delegate_to: "{{ k8s_control_plane_host }}"
+  become: true
+  register: kubectl_client_admin_conf
+  no_log: true
+
+- name: Create ~/.kube
+  ansible.builtin.file:
+    path: "{{ kubectl_client_kubeconfig | dirname }}"
+    state: directory
+    owner: "{{ kubectl_client_user }}"
+    group: "{{ kubectl_client_user }}"
+    mode: "0700"
+
+- name: Install kubeconfig
+  ansible.builtin.copy:
+    dest: "{{ kubectl_client_kubeconfig }}"
+    content: "{{ kubectl_client_admin_conf.content | b64decode }}"
+    owner: "{{ kubectl_client_user }}"
+    group: "{{ kubectl_client_user }}"
+    mode: "0600"
+  no_log: true
+
+- name: Enable kubectl bash completion
+  ansible.builtin.lineinfile:
+    path: "/home/{{ kubectl_client_user }}/.bashrc"
+    line: source <(kubectl completion bash)
+
+- name: Check API access from the bastion
+  ansible.builtin.command: kubectl get --raw /readyz
+  changed_when: false

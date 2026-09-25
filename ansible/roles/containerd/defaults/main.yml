@@ -1,0 +1,3 @@
+---
+containerd_repo_url: https://download.docker.com/linux/rhel/docker-ce.repo
+containerd_package: containerd.io

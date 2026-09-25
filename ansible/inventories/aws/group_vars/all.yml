@@ -1,0 +1,18 @@
+---
+# Variables globales del clúster. Las de red/DNS (dns_domain, vpc_cidr,
+# private_ip) las escribe Terraform en hosts.yml.
+
+node_fqdn: "{{ inventory_hostname }}.{{ dns_domain }}"
+
+# ---------- Kubernetes ----------
+# Rama del repo pkgs.k8s.io (cluster.md 2.7)
+k8s_version: "1.37"
+k8s_pod_cidr: 10.244.0.0/16      # debe coincidir con Flannel
+k8s_service_cidr: 10.96.0.0/12
+
+k8s_control_plane_host: "{{ groups['control_plane'][0] }}"
+k8s_control_plane_endpoint: "{{ k8s_control_plane_host }}.{{ dns_domain }}"
+k8s_api_advertise_address: "{{ hostvars[k8s_control_plane_host]['private_ip'] }}"
+
+# Usuario del bastión que administra el clúster con kubectl
+k8s_admin_user: "{{ ansible_user }}"

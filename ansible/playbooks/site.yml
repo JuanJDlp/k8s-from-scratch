@@ -1,0 +1,15 @@
+---
+# Clúster completo, en el orden de cluster.md (Fases 1 a 4).
+#   ansible-playbook playbooks/site.yml
+- name: Bootstrap
+  ansible.builtin.import_playbook: bootstrap.yml
+- name: Node preparation
+  ansible.builtin.import_playbook: nodes.yml
+- name: Control plane
+  ansible.builtin.import_playbook: control_plane.yml
+- name: Bastion and CNI
+  ansible.builtin.import_playbook: bastion.yml
+- name: Workers
+  ansible.builtin.import_playbook: workers.yml
+- name: Validation
+  ansible.builtin.import_playbook: validate.yml

@@ -1,0 +1,4 @@
+---
+kubeadm_worker_token_ttl: 15m
+kubeadm_worker_role_label: node-role.kubernetes.io/worker
+kubeadm_worker_ready_timeout: 300s

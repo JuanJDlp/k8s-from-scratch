@@ -1,0 +1,33 @@
+---
+- name: Set FQDN hostname
+  ansible.builtin.hostname:
+    name: "{{ node_fqdn }}"
+
+- name: Keep cloud-init from restoring the original hostname on reboot
+  ansible.builtin.copy:
+    dest: /etc/cloud/cloud.cfg.d/99-hostname.cfg
+    content: "preserve_hostname: true\n"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add cluster hosts to /etc/hosts (fallback for Route 53)
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED: k8s cluster hosts"
+    block: |
+      {% for host in common_etc_hosts_groups | map('extract', groups) | flatten | unique %}
+      {{ hostvars[host]['private_ip'] }}  {{ host }}.{{ dns_domain }}  {{ host }}
+      {% endfor %}
+
+- name: Upgrade all packages
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest # noqa package-latest
+    update_cache: true
+  when: common_upgrade_packages
+
+- name: Install base packages
+  ansible.builtin.dnf:
+    name: "{{ common_base_packages + common_extra_packages }}"
+    state: present

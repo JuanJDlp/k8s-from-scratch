@@ -1,0 +1,37 @@
+---
+- name: Check whether the node already joined
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubeadm_worker_kubelet_conf
+
+- name: Join the cluster
+  when: not kubeadm_worker_kubelet_conf.stat.exists
+  block:
+    - name: Create a short-lived join command on the control plane
+      ansible.builtin.command: kubeadm token create --ttl {{ kubeadm_worker_token_ttl }} --print-join-command
+      delegate_to: "{{ k8s_control_plane_host }}"
+      register: kubeadm_worker_join_command
+      changed_when: true
+      no_log: true
+
+    - name: Run kubeadm join
+      ansible.builtin.command: "{{ kubeadm_worker_join_command.stdout }} --node-name {{ node_fqdn }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      no_log: true
+
+# La etiqueta solo es estética: ROLES = worker en `kubectl get nodes` (cluster.md 3.5)
+- name: Label node as worker
+  ansible.builtin.command: >-
+    kubectl --kubeconfig /etc/kubernetes/admin.conf
+    label node {{ node_fqdn }} {{ kubeadm_worker_role_label }}= --overwrite
+  delegate_to: "{{ k8s_control_plane_host }}"
+  register: kubeadm_worker_label
+  changed_when: "'not labeled' not in kubeadm_worker_label.stdout"
+
+- name: Wait for node to be Ready
+  ansible.builtin.command: >-
+    kubectl --kubeconfig /etc/kubernetes/admin.conf
+    wait node/{{ node_fqdn }} --for=condition=Ready --timeout={{ kubeadm_worker_ready_timeout }}
+  delegate_to: "{{ k8s_control_plane_host }}"
+  changed_when: false

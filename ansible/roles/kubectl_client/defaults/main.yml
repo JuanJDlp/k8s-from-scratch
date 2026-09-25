@@ -1,0 +1,3 @@
+---
+kubectl_client_user: "{{ k8s_admin_user }}"
+kubectl_client_kubeconfig: "/home/{{ kubectl_client_user }}/.kube/config"

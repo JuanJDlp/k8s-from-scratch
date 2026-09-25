@@ -1,0 +1,8 @@
+# kubectl apply -k .   (kustomize viene dentro de kubectl, no hace falta Helm)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: test-deploy
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml

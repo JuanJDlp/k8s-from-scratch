@@ -1,0 +1,7 @@
+---
+firewalld_trusted_sources: []
+# Ver "Solución de problemas" en cluster.md: [cni0, flannel.1] si firewalld bloquea el tráfico entre Pods
+firewalld_trusted_interfaces: []
+firewalld_masquerade: false
+firewalld_common_ports: []
+firewalld_ports: []

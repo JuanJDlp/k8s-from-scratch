@@ -1,0 +1,15 @@
+---
+# cluster.md 1.1 / 2.1: `dnf -y update` antes de instalar nada
+common_upgrade_packages: true
+
+common_base_packages:
+  - vim
+  - tar
+  - bash-completion
+# Paquetes adicionales por grupo (group_vars)
+common_extra_packages: []
+
+# Grupos cuyos hosts se agregan a /etc/hosts como respaldo del DNS
+common_etc_hosts_groups:
+  - bastions
+  - k8s_cluster

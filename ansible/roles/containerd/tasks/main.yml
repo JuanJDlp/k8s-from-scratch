@@ -1,0 +1,54 @@
+---
+- name: Add Docker CE repository (provides containerd.io 2.x)
+  ansible.builtin.get_url:
+    url: "{{ containerd_repo_url }}"
+    dest: /etc/yum.repos.d/docker-ce.repo
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install containerd
+  ansible.builtin.dnf:
+    name: "{{ containerd_package }}"
+    state: present
+
+- name: Render containerd default configuration
+  ansible.builtin.command: containerd config default
+  register: containerd_default_config
+  changed_when: false
+  check_mode: false
+
+- name: Assert the default configuration exposes SystemdCgroup
+  ansible.builtin.assert:
+    that: "'SystemdCgroup = ' in containerd_default_config.stdout"
+    fail_msg: containerd config default no trae SystemdCgroup; revisa la versión de containerd
+    quiet: true
+
+- name: Write containerd configuration with the systemd cgroup driver
+  ansible.builtin.copy:
+    dest: /etc/containerd/config.toml
+    content: "{{ containerd_default_config.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') }}\n"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart containerd
+
+- name: Configure crictl
+  ansible.builtin.copy:
+    dest: /etc/crictl.yaml
+    content: |
+      runtime-endpoint: unix:///run/containerd/containerd.sock
+      image-endpoint: unix:///run/containerd/containerd.sock
+      timeout: 10
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable and start containerd
+  ansible.builtin.systemd_service:
+    name: containerd
+    state: started
+    enabled: true
+
+- name: Apply pending containerd restart before kubelet uses it
+  ansible.builtin.meta: flush_handlers

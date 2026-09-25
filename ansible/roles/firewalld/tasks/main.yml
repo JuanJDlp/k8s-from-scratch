@@ -1,0 +1,40 @@
+---
+- name: Ensure firewalld is running
+  ansible.builtin.systemd_service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Trust Pod and Service networks
+  ansible.posix.firewalld:
+    zone: trusted
+    source: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ firewalld_trusted_sources }}"
+
+- name: Trust CNI interfaces
+  ansible.posix.firewalld:
+    zone: trusted
+    interface: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ firewalld_trusted_interfaces }}"
+
+- name: Enable masquerade
+  ansible.posix.firewalld:
+    masquerade: true
+    permanent: true
+    immediate: true
+    state: enabled
+  when: firewalld_masquerade
+
+- name: Open Kubernetes ports
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ firewalld_common_ports + firewalld_ports }}"

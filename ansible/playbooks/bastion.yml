@@ -1,0 +1,9 @@
+---
+# Desde aquí toda la administración ocurre en el bastión, como usuario sin root
+- name: Configure kubectl and install Flannel (cluster.md 3.2 - 3.4)
+  hosts: bastions
+  become: false
+  tags: [bastion, cni]
+  roles:
+    - kubectl_client
+    - cni_flannel

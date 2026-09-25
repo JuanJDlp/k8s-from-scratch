@@ -1,0 +1,29 @@
+---
+# cluster.md 2.7 / 3.3. exclude= evita que un `dnf update` actualice Kubernetes por accidente
+- name: Add Kubernetes repository
+  ansible.builtin.yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: "{{ kubernetes_repo_url }}"
+    gpgcheck: true
+    gpgkey: "{{ kubernetes_repo_url }}repodata/repomd.xml.key"
+    exclude:
+      - kubelet
+      - kubeadm
+      - kubectl
+      - cri-tools
+      - kubernetes-cni
+
+- name: Install Kubernetes packages
+  ansible.builtin.dnf:
+    name: "{{ kubernetes_packages }}"
+    state: present
+    disable_excludes: kubernetes
+
+# Queda en auto-restart hasta que kubeadm init/join escriba su configuración
+- name: Enable kubelet
+  ansible.builtin.systemd_service:
+    name: kubelet
+    state: started
+    enabled: true
+  when: kubernetes_enable_kubelet
