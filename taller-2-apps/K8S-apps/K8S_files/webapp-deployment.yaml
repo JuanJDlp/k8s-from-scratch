@@ -16,7 +16,7 @@ spec:
       - name: app-container
         # Imagen en ECR (make image). Sin imagePullSecrets: el kubelet se
         # autentica con el rol IAM del nodo (ecr-credential-provider)
-        image: 954028443875.dkr.ecr.us-east-1.amazonaws.com/k8s-from-scratch/webapp:v1
+        image: 954028443875.dkr.ecr.us-east-1.amazonaws.com/k8s-from-scratch/webapp:v2
         ports:
         - containerPort: 5000
         # Reto: variables de entorno desde el ConfigMap y el Secret

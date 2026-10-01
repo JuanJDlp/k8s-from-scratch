@@ -1,6 +1,6 @@
-# No se aplica con `kubectl apply -f .` (no es recursivo): usa el mismo label
-# app: hola-mundo que el Deployment, así que el Service balancearía entre los
-# pods de ambos. Ver el análisis en el README del taller.
+# Se aplica a propósito junto al Deployment para el análisis del taller: usa el
+# mismo label app: hola-mundo, así que el Service balancea entre los pods de
+# ambos, y al cambiar la imagen del Deployment estos pods se quedan en v1.
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
