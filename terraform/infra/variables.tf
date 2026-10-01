@@ -83,6 +83,24 @@ variable "worker_instance_type" {
   default     = "c7i-flex.large"
 }
 
+# ---------- ECR ----------
+variable "ecr_repositories" {
+  description = "Repositorios ECR a crear; quedan como <project>/<nombre>"
+  type        = list(string)
+  default     = ["webapp"]
+
+  validation {
+    condition     = length(var.ecr_repositories) > 0
+    error_message = "Debe haber al menos un repositorio ECR."
+  }
+}
+
+variable "ecr_keep_images" {
+  description = "Cantidad de imágenes que conserva cada repositorio ECR"
+  type        = number
+  default     = 10
+}
+
 # ---------- Ansible ----------
 variable "ssh_user" {
   description = "Usuario por defecto de la AMI (Rocky Linux = rocky)"

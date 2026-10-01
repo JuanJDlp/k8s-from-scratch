@@ -1,0 +1,44 @@
+---
+# Permite al kubelet descargar imágenes de ECR con el rol IAM del nodo
+# (terraform/infra/ecr.tf), sin imagePullSecrets que vencen cada 12 h.
+- name: Create the credential provider directory
+  ansible.builtin.file:
+    path: "{{ ecr_credential_provider_bin_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download ecr-credential-provider
+  ansible.builtin.get_url:
+    url: "{{ ecr_credential_provider_url }}"
+    checksum: "sha256:{{ ecr_credential_provider_url }}.sha256"
+    dest: "{{ ecr_credential_provider_bin_dir }}/ecr-credential-provider"
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Restart kubelet
+
+- name: Write the kubelet credential provider configuration
+  ansible.builtin.template:
+    src: credential-provider-config.yaml.j2
+    dest: "{{ ecr_credential_provider_config }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart kubelet
+
+# El drop-in de kubeadm (10-kubeadm.conf) lee KUBELET_EXTRA_ARGS de este archivo.
+# Estos flags no existen en KubeletConfiguration, por eso van por línea de comandos.
+- name: Pass the credential provider flags to the kubelet
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/kubelet
+    regexp: "^KUBELET_EXTRA_ARGS="
+    line: >-
+      KUBELET_EXTRA_ARGS=--image-credential-provider-config={{ ecr_credential_provider_config }}
+      --image-credential-provider-bin-dir={{ ecr_credential_provider_bin_dir }}
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart kubelet

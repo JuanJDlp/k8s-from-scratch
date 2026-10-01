@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hola-mundo
+  template:
+    metadata:
+      labels:
+        app: hola-mundo
+    spec:
+      containers:
+      - name: app-container
+        # Imagen en ECR (make image). Sin imagePullSecrets: el kubelet se
+        # autentica con el rol IAM del nodo (ecr-credential-provider)
+        image: 954028443875.dkr.ecr.us-east-1.amazonaws.com/k8s-from-scratch/webapp:v1
+        ports:
+        - containerPort: 5000
+        # Reto: variables de entorno desde el ConfigMap y el Secret
+        envFrom:
+        - configMapRef:
+            name: webapp-configmap
+        - secretRef:
+            name: db-secrets
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 128Mi

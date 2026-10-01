@@ -20,6 +20,20 @@ output "dns_reverse_zone_id" {
   value       = module.dns_reverse.zone_id
 }
 
+output "region" {
+  value = var.region
+}
+
+output "ecr_registry" {
+  description = "Registro ECR (para docker login)"
+  value       = local.ecr_registry
+}
+
+output "ecr_repository_urls" {
+  description = "nombre => URL del repositorio, para usar en image: de los manifiestos"
+  value       = { for name, repo in aws_ecr_repository.this : name => repo.repository_url }
+}
+
 output "ssh_config" {
   description = "Pegar en ~/.ssh/config para entrar con: ssh bastion | ssh master | ssh worker"
   value = join("\n", concat(

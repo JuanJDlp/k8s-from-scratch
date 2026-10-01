@@ -78,6 +78,7 @@ module "master" {
   private_ips        = [var.master_ip]
   security_group_ids = [aws_security_group.master.id]
   key_name           = aws_key_pair.this.key_name
+  extra_policy_arns  = [local.ecr_pull_policy_arn]
 
   tags = { Role = "control-plane" }
 }
@@ -92,6 +93,7 @@ module "worker" {
   private_ips        = var.worker_ips
   security_group_ids = [aws_security_group.worker.id]
   key_name           = aws_key_pair.this.key_name
+  extra_policy_arns  = [local.ecr_pull_policy_arn]
 
   tags = { Role = "worker" }
 }

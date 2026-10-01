@@ -56,7 +56,7 @@ The master and workers live in the private subnet and are reached through the ba
 
 ```text
 .
-├── Makefile                  # make up / make down / make ping
+├── Makefile                  # make up / make down / make ping / make image
 ├── terraform/
 │   ├── bootstrap/            # one-time: S3 bucket for the remote Terraform state
 │   ├── infra/                # VPC, security groups, EC2, Route 53, Ansible inventory
@@ -65,7 +65,8 @@ The master and workers live in the private subnet and are reached through the ba
 │       ├── compute/          # EC2 instances (Rocky 9, IMDSv2, encrypted gp3, SSM role)
 │       └── route53/          # private hosted zone + records
 ├── ansible/                  # roles and playbooks that build the cluster (see ansible/README.md)
-└── test-deploy/              # sample app (podinfo) to try the cluster (see test-deploy/README.md)
+├── test-deploy/              # sample app (podinfo) to try the cluster (see test-deploy/README.md)
+└── taller-2-apps/            # lab 2: K8S-apps deployed from a private ECR repository
 ```
 
 ## Prerequisites

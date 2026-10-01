@@ -1,0 +1,15 @@
+---
+# Binario oficial de kubernetes/cloud-provider-aws. Misma minor que Kubernetes
+ecr_credential_provider_version: v1.37.0
+ecr_credential_provider_url: >-
+  https://artifacts.k8s.io/binaries/cloud-provider-aws/{{ ecr_credential_provider_version
+  }}/linux/amd64/ecr-credential-provider-linux-amd64
+ecr_credential_provider_bin_dir: /usr/local/libexec/kubernetes/credential-providers
+ecr_credential_provider_config: /etc/kubernetes/credential-provider-config.yaml
+
+# Imágenes para las que el kubelet pide credenciales al plugin
+ecr_credential_provider_match_images:
+  - "*.dkr.ecr.*.amazonaws.com"
+  - "*.dkr.ecr.*.amazonaws.com.cn"
+# El token de ECR dura 12 h; el kubelet lo cachea ese tiempo
+ecr_credential_provider_cache_duration: 12h

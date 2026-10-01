@@ -50,6 +50,7 @@ ansible/
     ├── firewalld                # zonas trusted, masquerade, puertos
     ├── containerd               # containerd 2.x + SystemdCgroup
     ├── kubernetes_packages      # repo pkgs.k8s.io + kubeadm/kubelet/kubectl
+    ├── ecr_credential_provider  # kubelet descarga de ECR con el rol IAM del nodo
     ├── kubeadm_control_plane    # kubeadm init con archivo de configuración
     ├── kubeadm_worker           # join con token de 15 min, etiqueta worker
     ├── kubectl_client           # admin.conf -> ~/.kube/config en el bastión
@@ -70,6 +71,7 @@ repite `kubeadm init` ni `join` (se detectan por `admin.conf` y `kubelet.conf`).
 
 ```bash
 ansible-playbook playbooks/site.yml --tags validate     # solo la Fase 4
+ansible-playbook playbooks/site.yml --tags ecr          # solo el acceso a ECR del kubelet
 ansible-playbook playbooks/nodes.yml --limit worker     # preparar un nodo
 make ping                                               # probar conectividad
 ```

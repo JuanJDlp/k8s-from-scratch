@@ -91,6 +91,12 @@ variable "enable_ssm" {
   default     = true
 }
 
+variable "extra_policy_arns" {
+  description = "Políticas IAM adicionales para el rol de la instancia (requiere enable_ssm)"
+  type        = list(string)
+  default     = []
+}
+
 variable "tags" {
   description = "Tags adicionales para las instancias"
   type        = map(string)

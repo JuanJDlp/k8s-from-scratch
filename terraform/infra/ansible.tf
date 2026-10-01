@@ -16,5 +16,7 @@ resource "local_file" "ansible_inventory" {
     workers           = local.workers
     dns_domain        = var.dns_domain
     vpc_cidr          = var.vpc_cidr
+    aws_region        = var.region
+    ecr_registry      = local.ecr_registry
   })
 }

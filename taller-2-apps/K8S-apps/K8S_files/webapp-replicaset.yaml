@@ -1,0 +1,22 @@
+# No se aplica con `kubectl apply -f .` (no es recursivo): usa el mismo label
+# app: hola-mundo que el Deployment, así que el Service balancearía entre los
+# pods de ambos. Ver el análisis en el README del taller.
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: webapp-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hola-mundo
+  template:
+    metadata:
+      labels:
+        app: hola-mundo
+    spec:
+      containers:
+      - name: app-container
+        image: 954028443875.dkr.ecr.us-east-1.amazonaws.com/k8s-from-scratch/webapp:v1
+        ports:
+        - containerPort: 5000

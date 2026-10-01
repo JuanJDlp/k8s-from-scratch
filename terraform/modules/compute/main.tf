@@ -49,6 +49,14 @@ resource "aws_iam_role_policy_attachment" "ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# Políticas extra para el rol de la instancia (ej: descargar imágenes de ECR)
+resource "aws_iam_role_policy_attachment" "extra" {
+  for_each = var.enable_ssm ? toset(var.extra_policy_arns) : toset([])
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = each.value
+}
+
 resource "aws_iam_instance_profile" "this" {
   count = var.enable_ssm ? 1 : 0
 

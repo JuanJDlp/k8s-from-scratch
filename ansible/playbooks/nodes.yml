@@ -8,6 +8,8 @@
     - firewalld
     - containerd
     - kubernetes_packages
+    - role: ecr_credential_provider
+      tags: [ecr]
 
 - name: Install kubectl on the bastion (cluster.md 3.3)
   hosts: bastions
